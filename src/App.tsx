@@ -141,7 +141,7 @@ const App = () => {
 
         <div className="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
             <Select
-                className="w-full text-black"
+                className="w-full text-black mb-4 text-left"
                 isLoading={loading}
                 placeholder="Please type here to search..."
                 onChange={(val: any) => {
