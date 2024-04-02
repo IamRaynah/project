@@ -139,6 +139,7 @@ const App = () => {
             </select>
             <Select
                 className="w-full"
+                isLoading={ loading }
                 placeholder="Please type here to search..."
                 onChange={ (val: any) => {
                     setSymbol(val)
