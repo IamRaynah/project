@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import axios from 'axios'
+import Select from 'react-select'
 import Chart from "react-apexcharts"
-import axios, { AxiosResponse } from 'axios'
+import { useEffect, useState } from 'react'
+import { BarLoader } from 'react-spinners'
 
 import { API_KEY } from './consts'
 
@@ -17,9 +19,16 @@ interface metaInterface {
     timeZone: string;
 }
 
+interface symbolsInterface {
+    label: string;
+    value: string;
+}
+
 const App = () => {
     const [info, setInfo] = useState<metaInterface | undefined>()
-    const [data, setData] = useState<dataInterface[]>([])    
+    const [symbols, setSymbols] = useState<symbolsInterface[]>([])
+    const [symbol, setSymbol] = useState<symbolsInterface>()
+    const [data, setData] = useState<dataInterface[]>([])   
     const [categories, setCategories] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<any>()
@@ -29,10 +38,30 @@ const App = () => {
         volume: 0
     })
 
-    const execute = async () => {
+    const fetchSymbols = async (str: any) => {
         try {
             setLoading(true)
-            const response: AxiosResponse = await axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=${API_KEY}`, {
+            const response = await axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${str}&apikey=${API_KEY}`, {
+                headers: { 'User-Agent': 'request' }
+            })
+
+            if (response.data['Information']) {
+                setError({ message: response.data['Information'] })
+            } else {
+                // console.log(response.data.bestMatches.map((x: any) => ({ label: `${x['2. name']} (${x['1. symbol']})`, value: x['1. symbol'] })))
+                setSymbols(response.data.bestMatches.map((x: any) => ({ label: `${x['2. name']} (${x['1. symbol']})`, value: x['1. symbol'] })))
+            }
+            setLoading(false)
+        } catch (error) {
+            setError(error)
+            setLoading(false)
+        }
+    }
+
+    const fetchSeries = async () => {
+        try {
+            setLoading(true)
+            const response = await axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol?.value}&interval=5min&apikey=${API_KEY}`, {
                 headers: { 'User-Agent': 'request' }
             })
 
@@ -81,8 +110,8 @@ const App = () => {
     }
 
     useEffect(() => {
-        execute()
-    }, [])
+        fetchSeries()
+    }, [symbol])
 
     let options = {
         chart: {
@@ -97,12 +126,23 @@ const App = () => {
 
     const retry = () => {
         clearError()
-        execute()
+        fetchSeries()
+    }
+
+    const changeSymbol = (val: any) => {
+        setSymbol(val)
     }
 
     return (
 
         <div className="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
+            <Select
+                className="w-full"
+                onChange={ changeSymbol }
+                value={ symbol }
+                onInputChange={ val => fetchSymbols(val) }
+                options={symbols} />
+            { loading && <BarLoader style={{ position: 'relative', width: "100%" }} color="#36d7b7" /> }
             {
                 error &&
                 <div className="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg lg:overflow-visible">
