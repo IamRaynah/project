@@ -129,18 +129,24 @@ const App = () => {
         fetchSeries()
     }
 
-    const changeSymbol = (val: any) => {
-        setSymbol(val)
-    }
-
     return (
 
         <div className="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
+            <select>
+                {
+                    symbols.map((x: any) => <option key={x.value} value={x.value}>{x.label}</option>)
+                }
+            </select>
             <Select
                 className="w-full"
-                onChange={ changeSymbol }
+                placeholder="Please type here to search..."
+                onChange={ (val: any) => {
+                    setSymbol(val)
+                } }
                 value={ symbol }
-                onInputChange={ val => fetchSymbols(val) }
+                onInputChange={ (val: string) => {
+                    fetchSymbols(val)
+                }}
                 options={symbols} />
             { loading && <BarLoader style={{ position: 'relative', width: "100%" }} color="#36d7b7" /> }
             {
