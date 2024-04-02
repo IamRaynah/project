@@ -65,8 +65,8 @@ const App = () => {
                 headers: { 'User-Agent': 'request' }
             })
 
-            if (response.data['Information']) {
-                setError({ message: response.data['Information'] })
+            if (response.data['Information'] || response.data['Note']) {
+                setError({ message: response.data['Information'] ?? response.data['Note'] })
             } else {
                 let series = response.data['Time Series (5min)']
                 let meta = response.data['Meta Data']
